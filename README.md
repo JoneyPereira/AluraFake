@@ -48,7 +48,7 @@ Os esboços dos endpoints já estão criados — sua tarefa será **implementar 
 ##### 1.1 — Atividade de Resposta Aberta
 
 **Endpoint:** `/task/new/opentext`
-```bash
+``` bash
 curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/opentext \
   -H "Content-Type: application/json" \
   -d '{
@@ -61,7 +61,7 @@ curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/opentext \
 #### 1.2 — Atividade de alternativa única
 
 **Endpoint:** `/task/new/singlechoice`
-```bash
+``` bash
 curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/singlechoice \
   -H "Content-Type: application/json" \
   -d '{
@@ -95,7 +95,7 @@ curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/singlechoice \
 ##### 1.3 — Atividade de múltipla escolha
 
 **Endpoint:** `/task/new/multiplechoice`
-```bash
+``` bash
 curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/singlechoice \
   -H "Content-Type: application/json" \
   -d '{
@@ -168,7 +168,7 @@ Para publicar um curso, ele deve:
 Implemente o endpoint `/course/{id}/publish` validando essas regras antes da publicação.
 
 Exemplo de requisição:
-```bash
+``` bash
 curl -w "%{http_code}\n" -X POST http://localhost:8080/course/42/publish
 ```
 
@@ -187,7 +187,7 @@ O relatório deve:
 - Caso o instrutor não possua cursos, retornar uma lista vazia.
 
 Exemplo de requisição:
-```bash
+``` bash
 curl -w "%{http_code}\n" -X GET http://localhost:8080/instructor/7/courses
 ```
 
@@ -210,3 +210,54 @@ Caso decida implementar, escolha **apenas um**:
 - Outros candidatos estão concorrendo à mesma vaga, e códigos muito semelhantes resultarão na anulação do case.
 - Utilize ferramentas de IA, mas tenha cautela com o código gerado automaticamente. Caso avance para a próxima etapa,
   a entrevista síncrona será baseada no código que você produziu.
+
+## Formato do Commit
+
+Cada mensagem de commit pode conter um **header**, um **body** e um **footer**. O header possui um formato especial
+que pode conter um **type**, uma **task** (task ou história do jira) e um **subject**.
+
+```
+<type>(<task>): <subject>
+<body>
+<footer>
+```
+
+O **type** e o **subject** são obrigatórios.
+
+Exemplo:
+
+`docs: change README about CICD`
+
+### Tipos de Commits
+
+| Tipo    | Função                                                                      |
+| ------- | --------------------------------------------------------------------------- |
+| _feat_  | Uma nova implementação / feature                                            |
+| _build_ | Modificações que afetam as ferramentas de build                             |
+| _ci_    | Modificações nos arquivos e nos scripts de configuração de CI               |
+| _docs_  | Modificações em documentações e afins                                       |
+| _fix_   | Correção de um bug                                                          |
+| _perf_  | Modificações de código para otimizar performance                            |
+| _impr_  | Modificações que não necessariamente é um fix ou nova feature               |
+| _style_ | Mudanças que não modifiquem lógica (white-space, formatting, prettier, etc) |
+| _test_  | Testes que foram adicionados ou corrigidos                                  |
+| _chore_ | Uma modificação geral que não se enquandra em nenhum outro padrão           |
+
+## Como rodar esta aplicação springboot
+
+1° - No terminal, rode os seguintes comandos (de preferência na mesma ordem):
+
+```  bash
+docker network create redelocal --driver=bridge
+docker-compose up -d
+```
+
+2° - Insira essas variáveis de ambiente na aplicação, basta copiar e colar:
+
+```  bash
+SPRING_SERVER_PORT=8081
+SPRING_DATA_SOURCE_URL=jdbc:postgresql://localhost:5433/api_products_db
+SPRING_DATA_SOURCE_USERNAME=admin
+SPRING_DATA_SOURCE_PASSWORD=admin
+SPRING_JWT_SECRET=YmF0bWFuIGJhdG1hbiBiYXRtYW4=
+```
