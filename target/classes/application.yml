@@ -1,0 +1,28 @@
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  application:
+    name: AluraFake
+
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+  datasource:
+    driver-class-name: org.hibernate.dialect.MySQL8Dialect
+    url: ${SPRING_DATA_SOURCE_URL}
+    username: ${SPRING_DATA_SOURCE_USERNAME}
+    password: ${SPRING_DATA_SOURCE_PASSWORD}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    fail-on-missing-locations: true
+  jpa:
+    show-sql: true
+    open-in-view: false
+
+server:
+  port: ${SPRING_SERVER_PORT}
