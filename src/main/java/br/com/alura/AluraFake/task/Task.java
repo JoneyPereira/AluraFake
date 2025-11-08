@@ -21,12 +21,15 @@ public class Task {
     private Type type;
     private LocalDateTime publishedAt;
 
+    private Long order;
+
     @Deprecated
     public Task(){}
 
-    public Task(String statement, Course course, Type type) {
+    public Task(String statement, Course course, Type type, Long order) {
         this.statement = statement;
         this.course = course;
         this.type = type;
+        this.order = order;
     }
 }
