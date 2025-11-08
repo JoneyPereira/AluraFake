@@ -1,6 +1,6 @@
 FROM openjdk:21-alpine
 
-EXPOSE 8081
+EXPOSE 8080
 
 WORKDIR /app
 

@@ -96,7 +96,7 @@ curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/singlechoice \
 
 **Endpoint:** `/task/new/multiplechoice`
 ``` bash
-curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/singlechoice \
+curl -w "%{http_code}\n" -X POST http://localhost:8080/task/new/multiplechoice \
   -H "Content-Type: application/json" \
   -d '{
         "courseId": 42,
@@ -249,15 +249,14 @@ Exemplo:
 
 ```  bash
 docker network create redelocal --driver=bridge
-docker-compose up -d
+docker run --name alurafake -e MYSQL_DATABASE=alurafake -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 -d mysql:latest
 ```
 
 2° - Insira essas variáveis de ambiente na aplicação, basta copiar e colar:
 
 ```  bash
-SPRING_SERVER_PORT=8081
-SPRING_DATA_SOURCE_URL=jdbc:postgresql://localhost:5433/api_products_db
-SPRING_DATA_SOURCE_USERNAME=admin
-SPRING_DATA_SOURCE_PASSWORD=admin
-SPRING_JWT_SECRET=YmF0bWFuIGJhdG1hbiBiYXRtYW4=
+SPRING_SERVER_PORT=8080
+SPRING_DATA_SOURCE_URL=jdbc:mysql://localhost:3306/alurafake?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+SPRING_DATA_SOURCE_USERNAME=root
+SPRING_DATA_SOURCE_PASSWORD=root
 ```

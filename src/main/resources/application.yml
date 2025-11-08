@@ -11,7 +11,7 @@ spring:
       pageable:
         one-indexed-parameters: true
   datasource:
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: org.hibernate.dialect.MySQL8Dialect
     url: ${SPRING_DATA_SOURCE_URL}
     username: ${SPRING_DATA_SOURCE_USERNAME}
     password: ${SPRING_DATA_SOURCE_PASSWORD}
