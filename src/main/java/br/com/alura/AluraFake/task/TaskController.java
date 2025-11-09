@@ -61,8 +61,42 @@ public class TaskController {
     }
 
     @PostMapping("/singlechoice")
-    public ResponseEntity<?> newSingleChoice() {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> newSingleChoice(@Valid @RequestBody SingleChoiceDTO singlechoice) {
+        Optional<Course> courseOptional = courseRepository.findById(singlechoice.getCourseId());
+        if (courseOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "Curso não encontrado, id: " + singlechoice.getCourseId()));
+        }
+        Course courseEntity = courseOptional.get();
+
+        if (courseEntity.getStatus() != Status.BUILDING) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "O curso precisa estar com status BUILDING para receber atividades"));
+        }
+
+        if (taskRepository.existsByStatementAndCourse(singlechoice.getStatement(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
+        if (!singlechoice.hasExactlyOneCorrectOption()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("options", "A questão deve ter exatamente uma alternativa correta"));
+        }
+
+        Task task = new Task(singlechoice.getStatement(), courseEntity, singlechoice.getOrder());
+        task.setStatus(Type.SINGLE_CHOICE);
+        task.setOptions(singlechoice.getOptions());
+
+        taskRepository.save(task);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(task.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(task);
     }
 
     @PostMapping("/multiplechoice")

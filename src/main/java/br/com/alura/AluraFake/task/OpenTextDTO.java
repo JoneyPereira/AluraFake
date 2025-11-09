@@ -1,7 +1,5 @@
 package br.com.alura.AluraFake.task;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class OpenTextDTO {
     private Long id;
 
@@ -9,7 +7,6 @@ public class OpenTextDTO {
     @jakarta.validation.constraints.Size(min = 10, message = "O enunciado deve ter no mínimo 10 caracteres")
     private String statement;
 
-    @JsonProperty("courseId")
     @jakarta.validation.constraints.NotNull(message = "O ID do curso é obrigatório")
     private Long courseId;
 
