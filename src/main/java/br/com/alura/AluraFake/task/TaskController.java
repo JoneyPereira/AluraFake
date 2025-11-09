@@ -100,8 +100,41 @@ public class TaskController {
     }
 
     @PostMapping("/multiplechoice")
-    public ResponseEntity<?> newMultipleChoice() {
-        return ResponseEntity.ok().build();
-    }
+    public ResponseEntity<?> newMultipleChoice(@Valid @RequestBody MultiPlechoiceDTO multiplechoice) {
+        Optional<Course> courseOptional = courseRepository.findById(multiplechoice.getCourseId());
+        if (courseOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "Curso não encontrado, id: " + multiplechoice.getCourseId()));
+        }
+        Course courseEntity = courseOptional.get();
 
+        if (courseEntity.getStatus() != Status.BUILDING) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "O curso precisa estar com status BUILDING para receber atividades"));
+        }
+
+        if (taskRepository.existsByStatementAndCourse(multiplechoice.getStatement(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
+        if (!multiplechoice.hasAtLeastTwoCorrectOptions()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("options", "A questão deve ter pelo menos duas alternativas corretas"));
+        }
+
+        Task task = new Task(multiplechoice.getStatement(), courseEntity, multiplechoice.getOrder());
+        task.setStatus(Type.MULTIPLE_CHOICE);
+        task.setOptions(multiplechoice.getOptions());
+
+        taskRepository.save(task);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(task.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(task);
+    }
 }
