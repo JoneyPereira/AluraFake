@@ -34,6 +34,7 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorItemDTO("courseId", "Curso não encontrado, id: " + opentext.getCourseId()));
         }
+
         Course courseEntity = courseOptional.get();
 
         if (courseEntity.getStatus() != Status.BUILDING) {
@@ -44,6 +45,11 @@ public class TaskController {
         if (taskRepository.existsByStatementAndCourse(opentext.getStatement(), courseEntity)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
+        if (taskRepository.existsByOrderAndCourse(opentext.getOrder(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
         }
 
         Task task = new Task(opentext.getStatement(), courseEntity, opentext.getOrder());
@@ -77,6 +83,11 @@ public class TaskController {
         if (taskRepository.existsByStatementAndCourse(singlechoice.getStatement(), courseEntity)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
+        if (taskRepository.existsByOrderAndCourse(singlechoice.getOrder(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
         }
 
         if (!singlechoice.hasExactlyOneCorrectOption()) {
@@ -116,6 +127,11 @@ public class TaskController {
         if (taskRepository.existsByStatementAndCourse(multiplechoice.getStatement(), courseEntity)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
+        if (taskRepository.existsByOrderAndCourse(multiplechoice.getOrder(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
         }
 
         if (!multiplechoice.hasAtLeastTwoCorrectOptions()) {

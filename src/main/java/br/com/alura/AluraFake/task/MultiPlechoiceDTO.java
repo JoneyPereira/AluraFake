@@ -1,5 +1,6 @@
 package br.com.alura.AluraFake.task;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.util.Set;
@@ -16,11 +17,11 @@ public class MultiPlechoiceDTO {
 
     @NotNull(message = "A ordem é obrigatória")
     @Min(value = 1, message = "A ordem deve ser maior que zero")
-    @Positive(message = "A ordem deve ser um número positivo")
     private Long order;
 
     @NotNull(message = "As opções são obrigatórias")
     @Size(min = 3, message = "A questão deve ter no mínimo 3 alternativas")
+    @Valid
     private Set<Options> options;
 
     public MultiPlechoiceDTO() {

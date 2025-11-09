@@ -1,8 +1,7 @@
 package br.com.alura.AluraFake.task;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-
 import java.util.Set;
 
 public class SingleChoiceDTO {
@@ -17,11 +16,11 @@ public class SingleChoiceDTO {
 
     @NotNull(message = "A ordem é obrigatória")
     @Min(value = 1, message = "A ordem deve ser maior que zero")
-    @Positive(message = "A ordem deve ser um número positivo")
     private Long order;
 
     @NotNull(message = "As opções são obrigatórias")
     @Size(min = 2, message = "A questão deve ter no mínimo 2 alternativas")
+    @Valid
     private Set<Options> options;
 
     public SingleChoiceDTO() {

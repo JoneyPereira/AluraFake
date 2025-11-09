@@ -1,18 +1,21 @@
 package br.com.alura.AluraFake.task;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.*;
+import java.util.Set;
+
 public class OpenTextDTO {
     private Long id;
 
-    @jakarta.validation.constraints.NotBlank(message = "O enunciado é obrigatório")
-    @jakarta.validation.constraints.Size(min = 10, message = "O enunciado deve ter no mínimo 10 caracteres")
+    @NotBlank(message = "O enunciado é obrigatório")
+    @Size(min = 10, message = "O enunciado deve ter no mínimo 10 caracteres")
     private String statement;
 
-    @jakarta.validation.constraints.NotNull(message = "O ID do curso é obrigatório")
+    @NotNull(message = "O ID do curso é obrigatório")
     private Long courseId;
 
-    @jakarta.validation.constraints.NotNull(message = "A ordem é obrigatória")
-    @jakarta.validation.constraints.Min(value = 1, message = "A ordem deve ser maior que zero")
-    @jakarta.validation.constraints.Positive(message = "A ordem deve ser um número positivo")
+    @NotNull(message = "A ordem é obrigatória")
+    @Min(value = 1, message = "A ordem deve ser maior que zero")
     private Long order;
 
     public OpenTextDTO() {
