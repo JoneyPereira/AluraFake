@@ -29,6 +29,7 @@ public class Task {
     private LocalDateTime publishedAt;
 
     @Column(name = "task_order")
+    @jakarta.validation.constraints.Positive(message = "A ordem deve ser um número positivo")
     private Long order;
 
     @Column(columnDefinition = "json")
