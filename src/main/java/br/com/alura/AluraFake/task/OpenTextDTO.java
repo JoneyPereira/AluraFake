@@ -15,6 +15,7 @@ public class OpenTextDTO {
 
     @jakarta.validation.constraints.NotNull(message = "A ordem é obrigatória")
     @jakarta.validation.constraints.Min(value = 1, message = "A ordem deve ser maior que zero")
+    @jakarta.validation.constraints.Positive(message = "A ordem deve ser um número positivo")
     private Long order;
 
     public OpenTextDTO() {
