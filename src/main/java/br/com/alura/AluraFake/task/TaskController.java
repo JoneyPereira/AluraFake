@@ -2,6 +2,7 @@ package br.com.alura.AluraFake.task;
 
 import br.com.alura.AluraFake.course.Course;
 import br.com.alura.AluraFake.course.CourseRepository;
+import br.com.alura.AluraFake.course.Status;
 import br.com.alura.AluraFake.util.ErrorItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +15,14 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/tasks/new")
+@RequestMapping("/task/new")
 public class TaskController {
 
     private final TaskRepository taskRepository;
     private final CourseRepository courseRepository;
 
     @Autowired
-    public TaskController(TaskRepository taskRepository, CourseRepository courseRepository){
+    public TaskController(TaskRepository taskRepository, CourseRepository courseRepository) {
         this.taskRepository = taskRepository;
         this.courseRepository = courseRepository;
     }
@@ -29,12 +30,22 @@ public class TaskController {
     @PostMapping("/opentext")
     public ResponseEntity<?> newOpenTextExercise(@Valid @RequestBody OpenTextDTO opentext) {
         Optional<Course> courseOptional = courseRepository.findById(opentext.getCourseId());
-        if(courseOptional.isEmpty()) {
+        if (courseOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorItemDTO("courseId", "Curso não encontrado, id: " + opentext.getCourseId()));
         }
-
         Course courseEntity = courseOptional.get();
+
+        if (courseEntity.getStatus() != Status.BUILDING) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "O curso precisa estar com status BUILDING para receber atividades"));
+        }
+
+        if (taskRepository.existsByStatementAndCourse(opentext.getStatement(), courseEntity)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
+        }
+
         Task task = new Task(opentext.getStatement(), courseEntity, opentext.getOrder());
         task.setStatus(Type.OPEN_TEXT);
 
