@@ -4,25 +4,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OpenTextDTO {
     private Long id;
+
+    @jakarta.validation.constraints.NotBlank(message = "O enunciado é obrigatório")
+    @jakarta.validation.constraints.Size(min = 10, message = "O enunciado deve ter no mínimo 10 caracteres")
     private String statement;
 
     @JsonProperty("courseId")
-    private Long course_id;
+    @jakarta.validation.constraints.NotNull(message = "O ID do curso é obrigatório")
+    private Long courseId;
+
+    @jakarta.validation.constraints.NotNull(message = "A ordem é obrigatória")
+    @jakarta.validation.constraints.Min(value = 1, message = "A ordem deve ser maior que zero")
     private Long order;
 
     public OpenTextDTO() {
     }
 
-    public OpenTextDTO(Long id, String statement, Long course_id, Long order) {
+    public OpenTextDTO(Long id, String statement, Long courseId, Long order) {
         this.id = id;
         this.statement = statement;
-        this.course_id = course_id;
+        this.courseId = courseId;
         this.order = order;
     }
 
-    public OpenTextDTO(String statement, Long course_id, Long order) {
+    public OpenTextDTO(String statement, Long courseId, Long order) {
         this.statement = statement;
-        this.course_id = course_id;
+        this.courseId = courseId;
         this.order = order;
     }
 
@@ -42,12 +49,12 @@ public class OpenTextDTO {
         this.statement = statement;
     }
 
-    public Long getCourse_id() {
-        return course_id;
+    public Long getCourseId() {
+        return courseId;
     }
 
-    public void setCourse_id(Long course_id) {
-        this.course_id = course_id;
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 
     public Long getOrder() {

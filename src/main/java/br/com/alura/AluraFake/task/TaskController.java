@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/tasks/new")
 public class TaskController {
 
     private final TaskRepository taskRepository;
@@ -25,30 +26,36 @@ public class TaskController {
         this.courseRepository = courseRepository;
     }
 
-    @PostMapping("/task/new/opentext")
-    public ResponseEntity newOpenTextExercise(@Valid @RequestBody OpenTextDTO opentext) {
-
-        Optional<Course> courseOptional = courseRepository.findById(opentext.getCourse_id());
+    @PostMapping("/opentext")
+    public ResponseEntity<?> newOpenTextExercise(@Valid @RequestBody OpenTextDTO opentext) {
+        Optional<Course> courseOptional = courseRepository.findById(opentext.getCourseId());
         if(courseOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("cursoId", "\"Curso não encontrado, id: \" + opentext.getCourse_id()"));
+                    .body(new ErrorItemDTO("courseId", "Curso não encontrado, id: " + opentext.getCourseId()));
         }
 
         Course courseEntity = courseOptional.get();
         Task task = new Task(opentext.getStatement(), courseEntity, opentext.getOrder());
+        task.setStatus(Type.OPEN_TEXT);
 
         taskRepository.save(task);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(task.getId()).toUri();
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(task.getId())
+                .toUri();
+
         return ResponseEntity.created(uri).body(task);
     }
 
-    @PostMapping("/task/new/singlechoice")
-    public ResponseEntity newSingleChoice() {
+    @PostMapping("/singlechoice")
+    public ResponseEntity<?> newSingleChoice() {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/task/new/multiplechoice")
-    public ResponseEntity newMultipleChoice() {
+    @PostMapping("/multiplechoice")
+    public ResponseEntity<?> newMultipleChoice() {
         return ResponseEntity.ok().build();
     }
 
