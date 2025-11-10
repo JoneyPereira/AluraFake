@@ -67,4 +67,14 @@ public class Course {
     public LocalDateTime getPublishedAt() {
         return publishedAt;
     }
+
+    public void publish() {
+        Assert.state(this.status == Status.BUILDING, "O curso precisa estar com status BUILDING para ser publicado");
+        this.status = Status.PUBLISHED;
+        this.publishedAt = LocalDateTime.now();
+    }
+
+    public boolean isStatusBuilding() {
+        return this.status == Status.BUILDING;
+    }
 }
