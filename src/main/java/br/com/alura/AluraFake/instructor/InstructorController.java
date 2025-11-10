@@ -35,7 +35,7 @@ public class InstructorController {
     }
 
     @GetMapping("/{id}/courses")
-    public ResponseEntity<Object> listCourses(@PathVariable Long id) {
+    public ResponseEntity<Object> listCourses( @PathVariable Long id) {
         Optional<User> userOptional = userRepository.findById(id);
 
         if (userOptional.isEmpty()) {
