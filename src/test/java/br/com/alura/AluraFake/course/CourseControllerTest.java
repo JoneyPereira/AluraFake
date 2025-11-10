@@ -136,6 +136,6 @@ class CourseControllerTest {
 
         mockMvc.perform(post("/course/{id}/publish", course.getId())
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 }
