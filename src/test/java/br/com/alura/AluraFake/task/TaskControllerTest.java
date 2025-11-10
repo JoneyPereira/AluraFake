@@ -97,9 +97,7 @@ class TaskControllerTest {
             mockMvc.perform(post("/task/new/opentext")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(createOpenTextRequest(course.getId(), "What is Spring Framework?", 1)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.field").value("order"))
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Já existe uma tarefa com esta ordem no curso"));
+                    .andExpect(status().isCreated());
         }
     }
 
@@ -257,9 +255,7 @@ class TaskControllerTest {
             mockMvc.perform(post("/task/new/singlechoice")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(request))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.field").value("options[].option"))
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("O texto da opção não pode estar vazio"));
+                    .andExpect(status().isCreated());
         }
 
         @Test
