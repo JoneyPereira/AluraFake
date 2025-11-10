@@ -77,12 +77,12 @@ public class MultiPlechoiceDTO {
 
     public boolean hasExactlyOneCorrectOption() {
         if (options == null) return false;
-        return options.stream().filter(Options::getCorrect).count() == 1;
+        return options.stream().filter(Options::isCorrect).count() == 1;
     }
 
     public boolean hasAtLeastTwoCorrectOptions() {
         if (options == null) return false;
-        long correctCount = options.stream().filter(Options::getCorrect).count();
+        long correctCount = options.stream().filter(Options::isCorrect).count();
         return correctCount >= 2;
     }
 }

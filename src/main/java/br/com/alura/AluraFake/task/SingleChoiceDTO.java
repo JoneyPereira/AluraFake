@@ -75,6 +75,6 @@ public class SingleChoiceDTO {
 
     public boolean hasExactlyOneCorrectOption() {
         if (options == null) return false;
-        return options.stream().filter(Options::getCorrect).count() == 1;
+        return options.stream().filter(Options::isCorrect).count() == 1;
     }
 }

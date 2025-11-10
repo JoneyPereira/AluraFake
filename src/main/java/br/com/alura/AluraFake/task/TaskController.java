@@ -34,7 +34,7 @@ public class TaskController {
 
         // Validar se a ordem é sequencial
         if (!existingTasks.isEmpty()) {
-            long maxOrder = existingTasks.get(existingTasks.size() - 1).getOrder();
+            long maxOrder = existingTasks.getLast().getOrder();
             if (newOrder > maxOrder + 1) {
                 throw new IllegalArgumentException("A ordem deve ser sequencial. Próxima ordem válida: " + (maxOrder + 1));
             }
