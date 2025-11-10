@@ -31,6 +31,8 @@ public class DataSeeder implements CommandLineRunner {
             User paulo = new User("Paulo", "paulo@alura.com.br", Role.INSTRUCTOR);
             userRepository.saveAll(Arrays.asList(caio, paulo));
             courseRepository.save(new Course("Java", "Aprenda Java com Alura", paulo));
+            courseRepository.save(new Course("Spring", "Aprenda Spring na Alura", paulo));
+            courseRepository.save(new Course("JPA", "Aprenda JPA na Alura", paulo));
         }
     }
 }
