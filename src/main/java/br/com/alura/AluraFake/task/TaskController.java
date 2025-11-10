@@ -8,10 +8,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -27,6 +29,32 @@ public class TaskController {
         this.courseRepository = courseRepository;
     }
 
+    private void validateAndReorganizeOrder(Course course, Long newOrder) {
+        List<Task> existingTasks = taskRepository.findByCourseOrderByOrderAsc(course);
+
+        // Validar se a ordem é sequencial
+        if (!existingTasks.isEmpty()) {
+            long maxOrder = existingTasks.get(existingTasks.size() - 1).getOrder();
+            if (newOrder > maxOrder + 1) {
+                throw new IllegalArgumentException("A ordem deve ser sequencial. Próxima ordem válida: " + (maxOrder + 1));
+            }
+        } else if (newOrder > 1) {
+            throw new IllegalArgumentException("A primeira atividade deve ter ordem 1");
+        }
+
+        // Reorganizar as ordens se necessário
+        if (!existingTasks.isEmpty() && existingTasks.stream().anyMatch(task -> task.getOrder().equals(newOrder))) {
+            // Atualizar todas as tarefas com ordem maior ou igual à nova ordem
+            existingTasks.stream()
+                    .filter(task -> task.getOrder() >= newOrder)
+                    .forEach(task -> {
+                        task.setOrder(task.getOrder() + 1);
+                        taskRepository.save(task);
+                    });
+        }
+    }
+
+    @Transactional
     @PostMapping("/opentext")
     public ResponseEntity<?> newOpenTextExercise(@Valid @RequestBody OpenTextDTO opentext) {
         Optional<Course> courseOptional = courseRepository.findById(opentext.getCourseId());
@@ -47,9 +75,11 @@ public class TaskController {
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
         }
 
-        if (taskRepository.existsByOrderAndCourse(opentext.getOrder(), courseEntity)) {
+        try {
+            validateAndReorganizeOrder(courseEntity, opentext.getOrder());
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
+                    .body(new ErrorItemDTO("order", e.getMessage()));
         }
 
         Task task = new Task(opentext.getStatement(), courseEntity, opentext.getOrder());
@@ -66,6 +96,7 @@ public class TaskController {
         return ResponseEntity.created(uri).body(task);
     }
 
+    @Transactional
     @PostMapping("/singlechoice")
     public ResponseEntity<?> newSingleChoice(@Valid @RequestBody SingleChoiceDTO singlechoice) {
         Optional<Course> courseOptional = courseRepository.findById(singlechoice.getCourseId());
@@ -85,9 +116,11 @@ public class TaskController {
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
         }
 
-        if (taskRepository.existsByOrderAndCourse(singlechoice.getOrder(), courseEntity)) {
+        try {
+            validateAndReorganizeOrder(courseEntity, singlechoice.getOrder());
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
+                    .body(new ErrorItemDTO("order", e.getMessage()));
         }
 
         if (!singlechoice.hasExactlyOneCorrectOption()) {
@@ -110,6 +143,7 @@ public class TaskController {
         return ResponseEntity.created(uri).body(task);
     }
 
+    @Transactional
     @PostMapping("/multiplechoice")
     public ResponseEntity<?> newMultipleChoice(@Valid @RequestBody MultiPlechoiceDTO multiplechoice) {
         Optional<Course> courseOptional = courseRepository.findById(multiplechoice.getCourseId());
@@ -129,9 +163,11 @@ public class TaskController {
                     .body(new ErrorItemDTO("statement", "Já existe uma tarefa com este enunciado no curso"));
         }
 
-        if (taskRepository.existsByOrderAndCourse(multiplechoice.getOrder(), courseEntity)) {
+        try {
+            validateAndReorganizeOrder(courseEntity, multiplechoice.getOrder());
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("order", "Já existe uma tarefa com esta ordem no curso"));
+                    .body(new ErrorItemDTO("order", e.getMessage()));
         }
 
         if (!multiplechoice.hasAtLeastTwoCorrectOptions()) {
