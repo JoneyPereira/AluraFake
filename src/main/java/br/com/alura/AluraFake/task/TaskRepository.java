@@ -21,4 +21,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT COUNT(DISTINCT t.status) FROM Task t WHERE t.course = :course")
     long countDistinctTypesByCourse(@Param("course") Course course);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.course.id = :courseId")
+    long countByCourseId(@Param("courseId") Long courseId);
 }
