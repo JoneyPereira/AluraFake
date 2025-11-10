@@ -2,11 +2,13 @@ package br.com.alura.AluraFake.course;
 
 import br.com.alura.AluraFake.user.User;
 import jakarta.persistence.*;
+import lombok.Data;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Data
 public class Course {
 
     @Id

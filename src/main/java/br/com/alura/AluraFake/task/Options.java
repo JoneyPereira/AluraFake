@@ -1,29 +1,33 @@
 package br.com.alura.AluraFake.task;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
-@Data
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Options {
-    @NotBlank(message = "O texto da opção não pode estar vazio")
     private String option;
-    private Boolean isCorrect;
+    private boolean correct;
 
-    public Options() {
-    }
+    public Options() {}
 
-    public Options(String option, Boolean isCorrect) {
+    public Options(String option, boolean correct) {
         this.option = option;
-        this.isCorrect = isCorrect;
+        this.correct = correct;
     }
 
-    public Boolean getCorrect() {
-        return isCorrect;
+    public String getOption() {
+        return option;
     }
 
-    public void setCorrect(Boolean correct) {
-        isCorrect = correct;
+    public void setOption(String option) {
+        this.option = option;
+    }
+
+    public boolean getCorrect() {
+        return correct;
+    }
+
+    public void setCorrect(boolean correct) {
+        this.correct = correct;
+    }
+
+    public boolean isCorrect() {
+        return correct;
     }
 }

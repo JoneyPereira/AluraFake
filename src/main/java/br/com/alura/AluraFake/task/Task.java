@@ -4,9 +4,9 @@ import br.com.alura.AluraFake.course.Course;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -44,8 +44,6 @@ public class Task {
     }
 
     public Task(String statement, Course course, Long order) {
-        this.statement = statement;
-        this.course = course;
-        this.order = order;
+        this(statement, course, Type.OPEN_TEXT, order);
     }
 }

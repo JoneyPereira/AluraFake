@@ -2,10 +2,12 @@ package br.com.alura.AluraFake.user;
 
 import br.com.alura.AluraFake.util.PasswordGeneration;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Data
 public class User {
 
     @Id
