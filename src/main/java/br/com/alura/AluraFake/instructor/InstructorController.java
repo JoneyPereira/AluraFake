@@ -65,5 +65,4 @@ public class InstructorController {
         CourseReportDTO report = new CourseReportDTO(courseReport, totalPublishedCourses);
         return ResponseEntity.ok(report);
     }
-
 }
