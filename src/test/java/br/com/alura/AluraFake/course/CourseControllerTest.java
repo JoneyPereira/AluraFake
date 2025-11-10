@@ -1,120 +1,141 @@
 package br.com.alura.AluraFake.course;
 
-import br.com.alura.AluraFake.user.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import br.com.alura.AluraFake.task.Task;
+import br.com.alura.AluraFake.task.TaskRepository;
+import br.com.alura.AluraFake.task.Type;
+import br.com.alura.AluraFake.user.Role;
+import br.com.alura.AluraFake.user.User;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Set;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@WebMvcTest(CourseController.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class CourseControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
-    private UserRepository userRepository;
-    @MockBean
-    private CourseRepository courseRepository;
+
     @Autowired
-    private ObjectMapper objectMapper;
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    private Course course;
+    private User instructor;
+
+    @BeforeEach
+    void setUp() {
+        taskRepository.deleteAll();
+        courseRepository.deleteAll();
+
+        instructor = createInstructor();
+        course = createCourse(instructor);
+    }
+
+    private User createInstructor() {
+        User instructor = new User();
+        instructor.setName("Test Instructor");
+        instructor.setEmail("instructor@test.com");
+        instructor.setPassword("123456");
+        instructor.setRole(Role.INSTRUCTOR);
+        entityManager.persist(instructor);
+        return instructor;
+    }
+
+    private Course createCourse(User instructor) {
+        Course course = new Course("Java Test Course", "Curso de teste para Java", instructor);
+        return courseRepository.save(course);
+    }
 
     @Test
-    void newCourseDTO__should_return_bad_request_when_email_is_invalid() throws Exception {
+    void shouldNotAllowPublishingCourseWithoutAllActivityTypes() throws Exception {
+        // Create only one type of activity
+        Task task = new Task("What is Java?", course, 1L);
+        task.setStatus(Type.OPEN_TEXT);
+        taskRepository.save(task);
 
-        NewCourseDTO newCourseDTO = new NewCourseDTO();
-        newCourseDTO.setTitle("Java");
-        newCourseDTO.setDescription("Curso de Java");
-        newCourseDTO.setEmailInstructor("paulo@alura.com.br");
-
-        doReturn(Optional.empty()).when(userRepository)
-                .findByEmail(newCourseDTO.getEmailInstructor());
-
-        mockMvc.perform(post("/course/new")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCourseDTO)))
+        mockMvc.perform(post("/course/{id}/publish", course.getId())
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.field").value("emailInstructor"))
-                .andExpect(jsonPath("$.message").isNotEmpty());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.field").value("activities"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("O curso deve ter pelo menos uma atividade de cada tipo"));
     }
 
-
     @Test
-    void newCourseDTO__should_return_bad_request_when_email_is_no_instructor() throws Exception {
+    void shouldNotAllowPublishingCourseWithNonSequentialOrder() throws Exception {
+        // Create activities with gap in order
+        Task task1 = new Task("What is Java?", course, 1L);
+        task1.setStatus(Type.OPEN_TEXT);
+        taskRepository.save(task1);
 
-        NewCourseDTO newCourseDTO = new NewCourseDTO();
-        newCourseDTO.setTitle("Java");
-        newCourseDTO.setDescription("Curso de Java");
-        newCourseDTO.setEmailInstructor("paulo@alura.com.br");
+        Task task2 = new Task("What is Spring?", course, 3L); // Gap here (missing order 2)
+        task2.setStatus(Type.SINGLE_CHOICE);
+        task2.setOptions(Set.of());
+        taskRepository.save(task2);
 
-        User user = mock(User.class);
-        doReturn(false).when(user).isInstructor();
+        Task task3 = new Task("What is JPA?", course, 4L);
+        task3.setStatus(Type.MULTIPLE_CHOICE);
+        task3.setOptions(Set.of());
+        taskRepository.save(task3);
 
-        doReturn(Optional.of(user)).when(userRepository)
-                .findByEmail(newCourseDTO.getEmailInstructor());
-
-        mockMvc.perform(post("/course/new")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCourseDTO)))
+        mockMvc.perform(post("/course/{id}/publish", course.getId())
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.field").value("emailInstructor"))
-                .andExpect(jsonPath("$.message").isNotEmpty());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.field").value("order"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("As atividades devem estar em ordem sequencial contínua"));
     }
 
     @Test
-    void newCourseDTO__should_return_created_when_new_course_request_is_valid() throws Exception {
+    void shouldNotAllowPublishingNonBuildingCourse() throws Exception {
+        course.setStatus(Status.PUBLISHED);
+        courseRepository.save(course);
 
-        NewCourseDTO newCourseDTO = new NewCourseDTO();
-        newCourseDTO.setTitle("Java");
-        newCourseDTO.setDescription("Curso de Java");
-        newCourseDTO.setEmailInstructor("paulo@alura.com.br");
-
-        User user = mock(User.class);
-        doReturn(true).when(user).isInstructor();
-
-        doReturn(Optional.of(user)).when(userRepository).findByEmail(newCourseDTO.getEmailInstructor());
-
-        mockMvc.perform(post("/course/new")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(newCourseDTO)))
-                .andExpect(status().isCreated());
-
-        verify(courseRepository, times(1)).save(any(Course.class));
+        mockMvc.perform(post("/course/{id}/publish", course.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.field").value("status"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("O curso precisa estar com status BUILDING para ser publicado"));
     }
 
     @Test
-    void listAllCourses__should_list_all_courses() throws Exception {
-        User paulo = new User("Paulo", "paulo@alua.com.br", Role.INSTRUCTOR);
+    void shouldPublishCourseSuccessfully() throws Exception {
+        // Create one activity of each type in sequential order
+        Task task1 = new Task("What is Java?", course, 1L);
+        task1.setStatus(Type.OPEN_TEXT);
+        taskRepository.save(task1);
 
-        Course java = new Course("Java", "Curso de java", paulo);
-        Course hibernate = new Course("Hibernate", "Curso de hibernate", paulo);
-        Course spring = new Course("Spring", "Curso de spring", paulo);
+        Task task2 = new Task("What is Spring?", course, 2L);
+        task2.setStatus(Type.SINGLE_CHOICE);
+        task2.setOptions(Set.of());
+        taskRepository.save(task2);
 
-        when(courseRepository.findAll()).thenReturn(Arrays.asList(java, hibernate, spring));
+        Task task3 = new Task("What is JPA?", course, 3L);
+        task3.setStatus(Type.MULTIPLE_CHOICE);
+        task3.setOptions(Set.of());
+        taskRepository.save(task3);
 
-        mockMvc.perform(get("/course/all")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Java"))
-                .andExpect(jsonPath("$[0].description").value("Curso de java"))
-                .andExpect(jsonPath("$[1].title").value("Hibernate"))
-                .andExpect(jsonPath("$[1].description").value("Curso de hibernate"))
-                .andExpect(jsonPath("$[2].title").value("Spring"))
-                .andExpect(jsonPath("$[2].description").value("Curso de spring"));
+        mockMvc.perform(post("/course/{id}/publish", course.getId())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
-
 }
